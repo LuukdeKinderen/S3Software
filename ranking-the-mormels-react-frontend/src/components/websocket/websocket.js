@@ -25,7 +25,7 @@ export default function WebSocketComponent() {
 
         return (
             <>
-                <form  onSubmit={(e) => sendMessage(e)}>
+                 {/* <form  onSubmit={(e) => sendMessage(e)}>
                     <TextField
                         
                         label="Chat..."
@@ -36,7 +36,7 @@ export default function WebSocketComponent() {
                     <Fab color="primary" type="submit">
                         <SendIcon />
                     </Fab>
-                </form>
+                </form>  */}
 
 
                 

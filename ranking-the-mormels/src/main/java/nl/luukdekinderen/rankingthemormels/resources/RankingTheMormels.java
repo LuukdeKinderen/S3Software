@@ -24,7 +24,7 @@ public class RankingTheMormels {
 
         for (int i =0; i<questionCount;i++){
 
-            Question question = restTemplate.getForObject("http://localhost:8083/question/" + i , Question.class);
+            Question question = restTemplate.getForObject("http://ranking-questions/question/" + i , Question.class);
             questions.add(question);
         }
         return questions;
