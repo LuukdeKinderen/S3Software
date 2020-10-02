@@ -23,7 +23,7 @@ function App() {
   return (
     <ThemeProvider theme={outerTheme}>
       <div className="App">
-        <WebSocketComponent name="test" />
+        {/* <WebSocketComponent room="test" /> */}
         <LogonScreen />
         {/* <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
