@@ -1,7 +1,7 @@
 import React, { useState, } from 'react';
 
 import WebSocketComponent from '../websocket/websocket';
-import SockJsClient from 'react-stomp';
+//import SockJsClient from 'react-stomp';
 
 
 import TextField from "@material-ui/core/TextField";
@@ -74,7 +74,7 @@ export default function LogonScreen() {
     return (
         <>
 
-
+{/* 
             <SockJsClient
                 url={process.env.REACT_APP_WEBSOCKET}
                 topics={[
@@ -84,7 +84,7 @@ export default function LogonScreen() {
                 ]}
                 onMessage={(msg, topic) => MessagHandler(msg, topic)}
                 ref={(client) => { thisRef = client }}
-            />
+            /> */}
             {/* <WebSocketComponent
                 topics={[
                     '/app/game/rooms',
