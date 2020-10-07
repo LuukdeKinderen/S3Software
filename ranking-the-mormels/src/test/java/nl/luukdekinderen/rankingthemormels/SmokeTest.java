@@ -3,7 +3,7 @@ package nl.luukdekinderen.rankingthemormels;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import nl.luukdekinderen.rankingthemormels.resources.MessageController;
+import nl.luukdekinderen.rankingthemormels.resources.RoomController;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 public class SmokeTest {
 
 	@Autowired
-	private MessageController controller;
+	private RoomController controller;
 
 	@Test
 	public void contextLoads() throws Exception {
