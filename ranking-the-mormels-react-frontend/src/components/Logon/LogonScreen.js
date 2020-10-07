@@ -1,8 +1,8 @@
-import React, { useState, } from 'react';
+import React, { useState } from 'react';
 
-import WebSocketComponent from '../websocket/websocket';
-//import SockJsClient from 'react-stomp';
+import { useHistory } from "react-router-dom";
 
+//import { client } from '@stomp/stompjs'
 
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
@@ -10,52 +10,57 @@ import Grid from '@material-ui/core/Grid';
 
 
 
-export default function LogonScreen() {
+
+
+
+
+
+
+export default function LogonScreen(props) {
+
+    const history = useHistory();
+
     const [name, setName] = useState("");
-    const [roomCode, setRoomCode] = useState("");
+    const [roomId, setRoomId] = useState("");
     const [host, setHost] = useState(false);
 
-    let thisRef = React.createRef();
 
     function ChangeHost() {
         setHost(!host);
         if (!host) {
-            setRoomCode(makeid(4));
+            setRoomId(makeid(4));
         } else {
-            setRoomCode("");
-        }
-    }
-
-    function MessagHandler(msg, topic) {
-        console.log(msg);
-        console.log(topic);
-        if (msg === "ready to join") {
-            var player = {
-                name: name,
-                drinkCount: 0,
-                host: true
-            }
-            thisRef.sendMessage('/app/game/' + roomCode + '/addPlayer', JSON.stringify(player));
-
-        } else if (topic.includes("error")) {
-            alert(msg);
+            setRoomId("");
         }
     }
 
     function Join(e) {
         e.preventDefault();
+        var newUrl = `/room/${roomId}/${name}`;
+        var subscription = props.client.subscribe(newUrl, message => { ///app/game/rooms
+            if (message.body === "ok") {
+                history.push(newUrl);
+            }
+            else {
+                alert(message.body);
+            }
+            subscription.unsubscribe();
+
+        })
+        var player = {
+            name: name,
+            drinkCount: 0,
+            host: true
+        }
         if (host) {
             var gameRoom = {
-                roomid: roomCode
+                roomid: roomId,
+                players: [player]
             };
-            thisRef.sendMessage('/app/game/rooms', JSON.stringify(gameRoom));
+            props.client.publish({ destination: '/app/game/rooms', body: JSON.stringify(gameRoom) });
         } else {
-            var player = {
-                name: name,
-                drinkCount: 0,
-                host: true
-            }
-            thisRef.sendMessage('/app/game/' + roomCode + '/addPlayer', JSON.stringify(player));
+            player.host = false;
+            props.client.publish({ destination: `/app/game/${roomId}/addPlayer`, body: JSON.stringify(player) });
         }
     }
 
@@ -73,28 +78,6 @@ export default function LogonScreen() {
 
     return (
         <>
-
-{/* 
-            <SockJsClient
-                url={process.env.REACT_APP_WEBSOCKET}
-                topics={[
-                    '/room/' + roomCode,
-                    '/app/game/rooms',
-                    '/room/' + roomCode + "/error",
-                ]}
-                onMessage={(msg, topic) => MessagHandler(msg, topic)}
-                ref={(client) => { thisRef = client }}
-            /> */}
-            {/* <WebSocketComponent
-                topics={[
-                    '/app/game/rooms',
-                    '/room/' + roomCode,
-                    '/room/' + roomCode + "/error",
-                ]}
-                messagHandler={MessagHandler}
-                thisRef={thisRef}
-            />  */}
-
             <Grid
                 container
                 direction="column"
@@ -128,8 +111,8 @@ export default function LogonScreen() {
                                     required
                                     disabled={host}
                                     label="Room code"
-                                    value={roomCode}
-                                    onChange={(e) => setRoomCode(e.target.value)}
+                                    value={roomId}
+                                    onChange={(e) => setRoomId(e.target.value)}
                                 />
                             </Grid>
                             <Grid item>
@@ -148,5 +131,4 @@ export default function LogonScreen() {
             </Grid>
         </>
     );
-
 }

@@ -9,7 +9,9 @@ import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
@@ -25,9 +27,9 @@ public class RoomController {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketEventListener.class);
 
     @Autowired
-    private SimpMessageSendingOperations messagingTemplate;
+    private SimpMessagingTemplate messagingTemplate;
 
-    //TODO Make this in db?
+
     private List<GameRoom> rooms;
 
     @Autowired
@@ -40,10 +42,13 @@ public class RoomController {
         return rooms;
     }
 
+
     @MessageMapping("/game/rooms")
     public void addRooms(@Payload GameRoom gameRoom) {
 
+        String playerName = gameRoom.getPlayers().get(0).getName();
         String roomId = gameRoom.getRoomid();
+
         boolean flag = false;
         for (GameRoom room : rooms) {
             if (room.getRoomid().equals((roomId))) {
@@ -51,23 +56,21 @@ public class RoomController {
                 break;
             }
         }
+
         if (!flag) {
-            List<Player> players = new ArrayList<Player>();
-            gameRoom.setPlayers(players);
             rooms.add(gameRoom);
-            logger.info("ready to join");
-            messagingTemplate.convertAndSend("/room/" + roomId, "ready to join");
+            logger.info("New room: " + roomId);
+            messagingTemplate.convertAndSend("/room/" + roomId + "/" + playerName, "ok");
+            messagingTemplate.convertAndSend("/room/" + roomId + "/players", gameRoom.getPlayers());
         } else {
             logger.info("Room already exists");
-            messagingTemplate.convertAndSend("/room/" + roomId + "/error", "Room already exists");
+            messagingTemplate.convertAndSend("/room/" + roomId + "/" + playerName, "Room already exists");
         }
-
-
     }
+
 
     @MessageMapping("/game/{roomId}/addPlayer")
     public void joinRom(@DestinationVariable String roomId, @Payload Player newPlayer) {
-
         GameRoom room = GetRoom(roomId);
         if (room != null) {
             boolean flag = false;
@@ -78,19 +81,20 @@ public class RoomController {
                 }
             }
             if (!flag) {
-                logger.info(newPlayer.getName() + " joined " + room.getRoomid());
                 room.AddPlayer(newPlayer);
+                logger.info(newPlayer.getName() + " joined " + room.getRoomid());
+                messagingTemplate.convertAndSend("/room/" + roomId + "/" + newPlayer.getName(), "ok");
+                messagingTemplate.convertAndSend("/room/" + roomId + "/players", room.getPlayers());
             } else {
                 logger.info("Choose another name");
-                messagingTemplate.convertAndSend("/room/" + roomId + "/error", "Choose another name");
+                messagingTemplate.convertAndSend("/room/" + roomId + "/" + newPlayer.getName(), "Choose another name");
             }
         } else {
             logger.info("Room " + roomId + " does not exist");
-            messagingTemplate.convertAndSend("/room/" + roomId + "/error", "Room does not exist");
+            messagingTemplate.convertAndSend("/room/" + roomId + "/" + newPlayer.getName(), "Room does not exist");
         }
-
-
     }
+
 
     private GameRoom GetRoom(String roomId) {
         for (GameRoom room : rooms) {
