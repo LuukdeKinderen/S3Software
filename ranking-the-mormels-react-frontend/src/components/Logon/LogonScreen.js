@@ -1,19 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { useHistory } from "react-router-dom";
-
-//import { client } from '@stomp/stompjs'
 
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import Grid from '@material-ui/core/Grid';
 
-
-
-
-
-
-
+import logo from '../../Images/mormel.svg'
 
 
 export default function LogonScreen(props) {
@@ -23,6 +16,11 @@ export default function LogonScreen(props) {
     const [name, setName] = useState("");
     const [roomId, setRoomId] = useState("");
     const [host, setHost] = useState(false);
+    const [playerHash] = useState(sessionStorage.getItem('playerHash') || makeid(100));
+
+    useEffect(() => {
+        sessionStorage.setItem('playerHash', JSON.stringify(playerHash))
+    }, [playerHash]);
 
 
     function ChangeHost() {
@@ -36,18 +34,9 @@ export default function LogonScreen(props) {
 
     function Join(e) {
         e.preventDefault();
-        var newUrl = `/room/${roomId}/${name}`;
-        var subscription = props.client.subscribe(newUrl, message => { ///app/game/rooms
-            if (message.body === "ok") {
-                history.push(newUrl);
-            }
-            else {
-                alert(message.body);
-            }
-            subscription.unsubscribe();
-
-        })
+        var post = null;
         var player = {
+            id: sessionStorage.getItem('playerHash'),
             name: name,
             drinkCount: 0,
             host: true
@@ -57,11 +46,28 @@ export default function LogonScreen(props) {
                 roomid: roomId,
                 players: [player]
             };
-            props.client.publish({ destination: '/app/game/rooms', body: JSON.stringify(gameRoom) });
+            post = { destination: '/app/game/rooms', body: JSON.stringify(gameRoom) };
         } else {
             player.host = false;
-            props.client.publish({ destination: `/app/game/${roomId}/addPlayer`, body: JSON.stringify(player) });
+            post = { destination: `/app/game/${roomId}/addPlayer`, body: JSON.stringify(player) };
         }
+
+        var url = `/room/${roomId}/${sessionStorage.getItem('playerHash')}`;
+        props.subscribe(
+            url,
+            () => function (message) {
+                if (message.body === "ok") {
+                    history.push(`/room/${roomId}`);
+                }
+                else {
+                    alert(message.body);
+                }
+            },
+            post
+
+        );
+        
+        sessionStorage.setItem('player', JSON.stringify(player));
     }
 
     function makeid(length) {
@@ -86,6 +92,7 @@ export default function LogonScreen(props) {
                 style={{ height: "100vh" }}
             >
                 <Grid item>
+                    <img alt="Mormel logo" src={logo} width='100%' />
                     <h1>Ranking the Mormels</h1>
                     <form onSubmit={(e) => Join(e)}>
                         <Grid
@@ -123,7 +130,7 @@ export default function LogonScreen(props) {
                         </Grid>
                     </form>
                 </Grid>
-                <Grid item>
+                <Grid item  >
                     <Button style={{}} onClick={() => ChangeHost()}>
                         {host ? 'Or Join a room...' : 'Or host a room...'}
                     </Button>

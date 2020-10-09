@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { useParams } from 'react-router-dom'
 
-
+import LobbyScreen from './LobbyScreen';
 
 
 
@@ -10,48 +10,20 @@ import { useParams } from 'react-router-dom'
 
 export default function GameScreen(props) {
 
-    let { roomId, nickname } = useParams();
+    let { roomId } = useParams();
+    const [question, setQuestion] = useState(JSON.parse(sessionStorage.getItem('question')) || '');
 
-    const [players, setPlayers] = useState(null);
-    
-    var subscription = null;
-    var newUrl = `/room/${roomId}/players`;
-    props.client.onConnect = function (frame) {
-        subscription = props.client.subscribe(newUrl, message => messageHandler(message))
-    };
-
-    try {
-        subscription = props.client.subscribe(newUrl, message => messageHandler(message))
-    } catch (err) {
-
-    }
-
-    function messageHandler(message) {
-        console.log(JSON.parse(message.body));
-        setPlayers(JSON.parse(message.body));
-    }
+    useEffect(() => {
+        sessionStorage.setItem('question', JSON.stringify(question))
+    }, [question]);
 
 
-
-
-
-    if (players == null) {
-
+    if (question == '') {
         return (
-            <>
-                <h1>Waiting for host to start the game</h1>
-            </>
+            <LobbyScreen setQuestion={setQuestion} client={props.client} roomId={roomId} subscribe={props.subscribe} />
         );
-
     } else {
-
-        return (
-            <>
-                <h1>Players:</h1>
-                {players.map((player, key) =>
-                    <p key={key}>{player.name}</p>
-                )}
-            </>
-        );
+        console.log(question);
+        return (<p>game jongeh</p>);
     }
 }

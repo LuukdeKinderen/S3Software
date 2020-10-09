@@ -30,7 +30,8 @@ public class WebSocketEventListener {
         logger.info("Web socket disconnection");
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        String username = (String) headerAccessor.getSessionAttributes().get("username");
+        String username = (String) headerAccessor.getSessionAttributes().get("player_id");
+        logger.info(username);
         String roomId = (String) headerAccessor.getSessionAttributes().get("room_id");
         if (username != null) {
             logger.info("User Disconnected: " + username);
