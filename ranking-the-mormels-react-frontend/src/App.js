@@ -62,7 +62,7 @@ client.activate();
 
 function App() {
   const [url, setUrl] = useState('');
-  const [post, setPost] = useState(null);
+  const [publish, setPublish] = useState(null);
   const [subscription, setSubscription] = useState(null);
   const [messageHandler, setMessageHandler] = useState(() => function () { });
 
@@ -85,17 +85,17 @@ function App() {
       }))
     }
     try {
-      if (post != null) {
-        client.publish(post);
+      if (publish != null) {
+        client.publish(publish);
       }
     } catch (err) {
 
     }
   }, [messageHandler]);
 
-  function subscribe(url, messageHandler, post) {
+  function subscribe(url, messageHandler, publish) {
     setUrl(url);
-    setPost(post);
+    setPublish(publish);
     setMessageHandler(messageHandler);
   }
 

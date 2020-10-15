@@ -14,6 +14,7 @@ import java.util.List;
 @RequestMapping("/ranking-the-mormels")
 public class RankingTheMormels {
 
+
     @Autowired
     private RestTemplate restTemplate;
 
@@ -28,6 +29,11 @@ public class RankingTheMormels {
             questions.add(question);
         }
         return questions;
+    }
+
+    public Question getQuestion(int index){
+        Question question = restTemplate.getForObject("http://ranking-questions/question/"+index , Question.class);
+        return question;
     }
 
 }

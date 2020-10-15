@@ -5,6 +5,11 @@ import java.util.List;
 public class GameRoom {
     private String roomid;
     private int questionCount;
+
+    public int getQuestionCount() {
+        return questionCount;
+    }
+
     List<Player> players;
 
     public GameRoom() {

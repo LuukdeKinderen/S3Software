@@ -18,12 +18,12 @@ export default function GameScreen(props) {
     }, [question]);
 
 
-    if (question == '') {
+    if (question === '') {
         return (
             <LobbyScreen setQuestion={setQuestion} client={props.client} roomId={roomId} subscribe={props.subscribe} />
         );
     } else {
         console.log(question);
-        return (<p>game jongeh</p>);
+        return (<p>Game component</p>);
     }
 }

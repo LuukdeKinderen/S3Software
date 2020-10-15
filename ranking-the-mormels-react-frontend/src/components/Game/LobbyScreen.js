@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
 import Button from "@material-ui/core/Button";
-import Grid from '@material-ui/core/Grid';
 
 
 export default function LobbyScreen(props) {
@@ -12,7 +11,6 @@ export default function LobbyScreen(props) {
 
     useEffect(() => {
         sessionStorage.setItem('players', JSON.stringify(players))
-
     }, [players]);
 
 
@@ -47,7 +45,9 @@ export default function LobbyScreen(props) {
             props.subscribe(
                 url,
                 () => function (message) {
-                    props.setQuestion(JSON.parse(message.body));
+                    if (JSON.parse(message.body).question != null) {
+                        props.setQuestion(JSON.parse(message.body));
+                    }
                 },
                 { destination: `/app/game/${props.roomId}/nextQuestion`, body: sessionStorage.getItem('playerHash') }
             );
@@ -76,16 +76,15 @@ export default function LobbyScreen(props) {
                     </p>
                 </>
             );
-            console.log(players);
             if (players.length > 4) {
                 console.log('test');
                 StartButton =
                     (<Button variant="contained" color="primary" onClick={() => start()} size="large">
                         START
                     </Button>);
-            }else{
-                StartButton=(
-                    <><p>{5-players.length} players need to join</p></>
+            } else {
+                StartButton = (
+                    <><p>{5 - players.length} players need to join</p></>
                 );
             }
         }
