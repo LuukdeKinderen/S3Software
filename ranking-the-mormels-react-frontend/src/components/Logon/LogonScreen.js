@@ -97,7 +97,7 @@ export default function LogonScreen(props) {
                 alignItems="center"
                 style={{ height: "100vh" }}
             >
-                <Grid item>
+                <Grid item >
                     <img alt="Mormel logo" src={logo} width='100%' />
                     <h1>Ranking the Mormels</h1>
                     <form onSubmit={(e) => Join(e)}>
@@ -136,7 +136,7 @@ export default function LogonScreen(props) {
                         </Grid>
                     </form>
                 </Grid>
-                <Grid item  >
+                <Grid item >
                     <Button style={{}} onClick={() => ChangeHost()}>
                         {host ? 'Or Join a room...' : 'Or host a room...'}
                     </Button>

@@ -59,7 +59,9 @@ public class RoomController {
     }
 
     @MessageMapping("/room/{roomId}/addPlayer")
-    public void joinRoom(@DestinationVariable String roomId, @Payload Player newPlayer) {
+    public void joinRoom(@DestinationVariable String roomId,
+                         @Payload Player newPlayer,
+                         SimpMessageHeaderAccessor headerAccessor) {
         GameRoom room = roomService.GetRoom(roomId);
 
         if (room != null) {
@@ -83,6 +85,10 @@ public class RoomController {
                 logger.info(newPlayer.getName() + " joined " + room.getRoomid());
                 messagingTemplate.convertAndSend("/room/" + roomId + "/" + newPlayer.getId(), "ok");
                 messagingTemplate.convertAndSend("/room/" + roomId, room.getPlayers());
+
+                headerAccessor.getSessionAttributes().put("username", newPlayer.getName());
+                headerAccessor.getSessionAttributes().put("room_id", room.getRoomid());
+
             } else {
                 logger.info("Choose another name");
                 messagingTemplate.convertAndSend("/room/" + roomId + "/" + newPlayer.getId(), "Choose another name");
