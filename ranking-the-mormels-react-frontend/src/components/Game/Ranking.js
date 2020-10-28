@@ -1,5 +1,5 @@
 
-import React, {  useState } from 'react'
+import React, { useState } from 'react'
 
 
 import Chip from '@material-ui/core/Chip';
@@ -9,7 +9,7 @@ import Button from "@material-ui/core/Button";
 
 export default function Ranking(props) {
 
-    var players = props.players.sort((a, b) => (a.ranking < b.ranking) ? 1 : ((b.ranking < a.ranking) ? -1 : 0));
+    var players = props.players;//.sort((a, b) => (a.ranking < b.ranking || a.ranking === null) ? 1 : ((b.ranking < a.ranking || b.ranking === null) ? -1 : 0));
     //players = players.sort((a, b) => (a.ranking < b.ranking) ? 1 : ((b.ranking < a.ranking) ? -1 : 0));
 
 
@@ -56,13 +56,31 @@ export default function Ranking(props) {
 
     function rankingObject(player) {
         if (player.ranking != null) {
-            return <Chip label={rankingLabel(player.ranking)} onDelete={() => deleteRanking(player)} />;
+            return <>
+                <div style={{minWidth:'50%'}}>
+                    <Button variant="contained" color="primary" disabled>{player.name}</Button>
+                </div>
+                <div style={{minWidth:'50%'}}>
+                    <Chip label={rankingLabel(player.ranking)} onDelete={() => deleteRanking(player)} />
+                </div>
+            </>;
         } else if (newRanking >= -1) {
-            return <Chip label={rankingLabel(newRanking)} color="primary" deleteIcon={<DoneIcon />} onDelete={() => setRanking(player)} />;
+            return <>
+                <div style={{minWidth:'50%'}}>
+                    <Button variant="contained" color="primary" onClick={() => setRanking(player)}>{player.name}</Button>
+                </div>
+            </>;
+        } else {
+            return <>
+                <div style={{minWidth:'50%'}}>
+                    <Button variant="contained" color="primary" disabled>{player.name}</Button>
+                </div>
+                
+            </>;
         }
     }
-    function sendRankingObject(){
-        if (newRanking < -1) {return<p>test</p>}
+    function sendRankingObject() {
+        if (newRanking < -1) { return <p>test</p> }
     }
 
 
@@ -70,13 +88,24 @@ export default function Ranking(props) {
         <>
             <Grid
                 container
-                direction="column"
+            //spacing={2}
             >
                 {
                     players.map((player, key) =>
-                        <Grid item key={key}><p>{player.name} {rankingObject(player)} {player.ranking}</p></Grid>
+                        <Grid style={{ padding: '20px' }} item key={key} xs={12} sm={6}>
+                            <Grid
+                                container
+                                direction="row"
+                                justify="center"
+                                spacing={2}
+                            >
+
+                                {rankingObject(player)}
+
+                            </Grid>
+                        </Grid>
                     )}
-                    {sendRankingObject()}
+                {sendRankingObject()}
             </Grid>
         </>
     );
