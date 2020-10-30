@@ -2,6 +2,7 @@ package nl.luukdekinderen.rankingthemormels.models;
 
 public class Player {
 
+    private String id;
     private String name;
     private int drinkCount;
     private boolean host;
@@ -15,6 +16,15 @@ public class Player {
 //        this.drinkCount = drinkCount;
 //        this.host = host;
 //    }
+
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
