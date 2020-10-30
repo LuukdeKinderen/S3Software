@@ -13,6 +13,8 @@ import {
 
 import LogonScreen from './components/Logon/LogonScreen';
 import GameScreen from './components/Game/GameScreen';
+import Ranking from './components/Game/Ranking';
+import Henkie from './components/Game/Ranking2'
 
 
 
@@ -99,6 +101,17 @@ function App() {
     setMessageHandler(messageHandler);
   }
 
+  var players = [
+    { image: 0, id: '0', name: 'pieter' },
+    { image: 1, id: '1', name: 'klaas' },
+    { image: 2, id: '2', name: 'jan' },
+    { image: 3, id: '3', name: 'henk' },
+    { image: 4, id: '4', name: 'max' },
+    { image: 5, id: '5', name: 'trien' },
+
+  ]
+
+
 
 
   return (
@@ -112,6 +125,12 @@ function App() {
             </Route>
             <Route path="/room/:roomId">
               <GameScreen client={client} subscribe={subscribe} />
+            </Route>
+            <Route path="/ranking">
+              <Ranking players={players} />
+            </Route>
+            <Route path="/ranking2">
+              <Henkie players={players} />
             </Route>
             <Route path="*">
               <h1>Er is iets misgegaan...</h1>

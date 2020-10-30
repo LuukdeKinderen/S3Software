@@ -54,6 +54,7 @@ public class RoomController {
         GameRoom gameRoom = roomService.getRoom(roomId);
 
         if(gameRoom == null){
+
             logger.info("Room " + roomId + " does not exist");
             messagingTemplate.convertAndSend("/room/" + roomId, "Room does not exist");
             return;
