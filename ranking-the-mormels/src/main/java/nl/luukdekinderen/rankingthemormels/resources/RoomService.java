@@ -2,7 +2,9 @@ package nl.luukdekinderen.rankingthemormels.resources;
 
 import nl.luukdekinderen.rankingthemormels.models.GameRoom;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.context.annotation.Bean;
+
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -10,19 +12,34 @@ import java.util.List;
 
 @Service
 public class RoomService {
-    public List<GameRoom> rooms;
+
+    private List<GameRoom> rooms;
 
     @Autowired
-    public void RoomService() {
+    public void RoomService(){
         rooms = new ArrayList<GameRoom>();
     }
 
-    public GameRoom GetRoom(String roomId) {
-        for (GameRoom room : rooms) {
-            if (room.getRoomid().equals(roomId)) {
-                return room;
+    public GameRoom getRoom(String roomId){
+        for (GameRoom gameRoom: rooms) {
+            if(gameRoom.getId().equals(roomId)){
+                return gameRoom;
             }
         }
         return null;
+    }
+
+    public boolean addRoom(GameRoom newGameRoom){
+        boolean flag = false;
+        for (GameRoom gameRoom: rooms) {
+            if(gameRoom.getId().equals(newGameRoom.getId())){
+                flag = true;
+            }
+        }
+        if(!flag){
+            rooms.add(newGameRoom);
+            return true;
+        }
+        return false;
     }
 }
