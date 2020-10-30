@@ -1,7 +1,6 @@
 package nl.luukdekinderen.rankingthemormels.models;
 
 public class Ranking {
-
     private String firstName;
     private String secondName;
     private String thirdName;

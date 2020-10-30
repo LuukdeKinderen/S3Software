@@ -88,13 +88,18 @@ export default function LobbyScreen(props) {
                 );
             }
         }
-        return (<>
-            <h1>Join via {props.roomId}</h1>
-            {Content}
-            {StartButton}
-        </>
+        return (
+            <div>
+                <h1>Join via {props.roomId}</h1>
+                {Content}
+                {StartButton}
+            </div>
         );
     } else {
-        return <h4>Waiting for host to start the game...</h4>;
+        return (
+            <div>
+                <h4>Waiting for host to start the game...</h4>
+            </div>
+        );
     }
 }
