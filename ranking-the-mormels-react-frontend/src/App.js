@@ -14,7 +14,6 @@ import {
 import LogonScreen from './components/Logon/LogonScreen';
 import GameScreen from './components/Game/GameScreen';
 import Ranking from './components/Game/Ranking';
-import Henkie from './components/Game/Ranking2'
 
 
 
@@ -31,8 +30,6 @@ const outerTheme = createMuiTheme(
   }
 );
 
-
-
 const client = new Client({
   brokerURL: process.env.REACT_APP_WEBSOCKET,
   // connectHeaders: {
@@ -47,90 +44,91 @@ const client = new Client({
   heartbeatOutgoing: 4000
 });
 
-client.onConnect = function (frame) {
-  // subscription=client.subscribe("", message => { ///app/game/rooms
-
-  // });
-}
-
-
-client.onStompError = function (frame) {
+client.onStompError = (frame) => {
   console.log('Broker reported error: ' + frame.headers['message']);
   console.log('Additional details: ' + frame.body);
 };
 
+
 client.activate();
 
-
 function App() {
-  const [url, setUrl] = useState('');
-  const [publish, setPublish] = useState(null);
-  const [subscription, setSubscription] = useState(null);
-  const [messageHandler, setMessageHandler] = useState(() => function () { });
+  //before leaving error
+  window.addEventListener("beforeunload", (ev) => {
+    ev.preventDefault();
+    return ev.returnValue = 'Are you sure you want to close?';
+  });
 
+  const [roomId, setRoomId] = useState(sessionStorage.getItem('roomId') || null);
+  const [player, setPlayer] = useState(JSON.parse(sessionStorage.getItem('player')) || { id: makeid(100), name: '', drinkCount: 0, host: false })
+  const [players, setPlayers] = useState(JSON.parse(sessionStorage.getItem('players')) || null);
+
+  //roomId And default subscribe
   useEffect(() => {
-    try {
-      subscription.unsubscribe();
-    } catch (err) {
-
-    }
-    try {
-      setSubscription(client.subscribe(url, message => { ///app/game/rooms
-        messageHandler(message);
-      }));
-    } catch (err) {
-
-    }
-    client.onConnect = function (frame) {
-      setSubscription(client.subscribe(url, message => { ///app/game/rooms
-        messageHandler(message);
-      }))
-    }
-    try {
-      if (publish != null) {
-        client.publish(publish);
+    if (roomId != null) {
+      sessionStorage.setItem('roomId', roomId)
+      client.onConnect = () => {
+        subscribe(roomId);
       }
-    } catch (err) {
-
     }
-  }, [messageHandler]);
+  }, [roomId])
 
-  function subscribe(url, messageHandler, publish) {
-    setUrl(url);
-    setPublish(publish);
-    setMessageHandler(messageHandler);
+  //player
+  useEffect(() => {
+    if (player != null) {
+      sessionStorage.setItem('player', JSON.stringify(player))
+    }
+  }, [player]);
+
+  //players
+  useEffect(() => {
+    if (players != null) {
+      sessionStorage.setItem('players', JSON.stringify(players))
+    }
+  }, [players])
+
+  function subscribe(newRoomId) {
+    client.subscribe(`/room/${newRoomId}`, message => {
+      messageHandler(message.body);
+    })
   }
 
-  var players = [
-    { image: 0, id: '0', name: 'pieter' },
-    { image: 1, id: '1', name: 'klaas' },
-    { image: 2, id: '2', name: 'jan' },
-    { image: 3, id: '3', name: 'henk' },
-    { image: 4, id: '4', name: 'max' },
-    { image: 5, id: '5', name: 'trien' },
+  function publish(publish) {
+    client.publish(publish);
+  }
 
-  ]
+  function makeid(length) {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+  }
 
 
-
+  function messageHandler(message) {
+    message = JSON.parse(message);
+    if (message.players != null) {
+      setPlayers(message.players)
+    }
+    console.log(message);
+  }
 
   return (
     <ThemeProvider theme={outerTheme}>
       <Router>
-
         <div className="App">
           <Switch>
             <Route exact path="/">
-              <LogonScreen client={client} subscribe={subscribe} />
+              <LogonScreen publish={publish} subscribe={subscribe} setRoomId={setRoomId} setPlayer={setPlayer} />
             </Route>
-            <Route path="/room/:roomId">
-              <GameScreen client={client} subscribe={subscribe} />
+            <Route path="/Game">
+              <GameScreen client={client} />
             </Route>
             <Route path="/ranking">
               <Ranking players={players} />
-            </Route>
-            <Route path="/ranking2">
-              <Henkie players={players} />
             </Route>
             <Route path="*">
               <h1>Er is iets misgegaan...</h1>

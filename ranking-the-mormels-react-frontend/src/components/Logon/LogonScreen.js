@@ -16,11 +16,7 @@ export default function LogonScreen(props) {
     const [name, setName] = useState("");
     const [roomId, setRoomId] = useState("");
     const [host, setHost] = useState(false);
-    const [playerHash] = useState(sessionStorage.getItem('playerHash') || makeid(100));
 
-    useEffect(() => {
-        sessionStorage.setItem('playerHash', playerHash)
-    }, [playerHash]);
 
     useEffect(() => {
         fetch("https://randomuser.me/api/")
@@ -44,36 +40,26 @@ export default function LogonScreen(props) {
         e.preventDefault();
         var publish = null;
         var player = {
-            id: playerHash,
+            id: JSON.parse(sessionStorage.getItem('player')).id,
             name: name,
             drinkCount: 0,
             host: true
         }
         if (host) {
             var gameRoom = {
-                roomid: roomId,
-                players: [player]
+                id: roomId,
+                players: [player],
             };
-            publish = { destination: '/app/room/addRoom', body: JSON.stringify(gameRoom) };
+            publish = { destination: '/app/room/create', body: JSON.stringify(gameRoom) };
         } else {
             player.host = false;
             publish = { destination: `/app/room/${roomId}/addPlayer`, body: JSON.stringify(player) };
         }
-
-        var url = `/room/${roomId}/${playerHash}`;
-        props.subscribe(
-            url,
-            () => function (message) {
-                if (message.body === "ok") {
-                    history.push(`/room/${roomId}`);
-                }
-                else {
-                    alert(message.body);
-                }
-            },
-            publish
-        );
-        sessionStorage.setItem('player', JSON.stringify(player));
+        props.setPlayer(player);
+        props.setRoomId(roomId);
+        props.subscribe(roomId);
+        props.publish(publish);
+        history.push(`/Game`);
     }
 
     function makeid(length) {

@@ -2,13 +2,16 @@ package nl.luukdekinderen.rankingthemormels.resources;
 
 import nl.luukdekinderen.rankingthemormels.models.GameRoom;
 import nl.luukdekinderen.rankingthemormels.models.Player;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 
 
@@ -24,51 +27,82 @@ public class RoomController {
     private RoomService roomService;
 
 
-
-
-
     @Autowired
     public void RoomController() {
 
     }
 
     @MessageMapping("/room/create")
-    public void addRooms(@Payload GameRoom gameRoom) {
-
+    public void addRooms(@Payload GameRoom gameRoom, SimpMessageHeaderAccessor headerAccessor) {
         String roomId = gameRoom.getId();
+        Player player = gameRoom.getPlayers().get(0);
+
+        headerAccessor.getSessionAttributes().put("room_id", roomId);
+        headerAccessor.getSessionAttributes().put("username", player.getName());
+
         boolean added = roomService.addRoom(gameRoom);
 
-        if(added){
+        if (added) {
             logger.info("Room created: " + roomId);
-            messagingTemplate.convertAndSend("/room/" + roomId , gameRoom.getPlayerNames());
-        }else {
-            logger.info("Room already exists");
-            messagingTemplate.convertAndSend("/room/" + roomId , "Room already exists");
 
+            JSONObject message = new JSONObject();
+            message.put("players", gameRoom.getPlayerNames());
+
+            messagingTemplate.convertAndSend("/room/" + roomId, message.toString());
+        } else {
+            sendError(
+                    roomId,
+                    player,
+                    "Room already exists"
+            );
         }
     }
 
 
     @MessageMapping("/room/{roomId}/addPlayer")
-    public void joinRom(@DestinationVariable String roomId, @Payload Player newPlayer) {
+    public void joinRoom(@DestinationVariable String roomId, @Payload Player newPlayer, SimpMessageHeaderAccessor headerAccessor) {
+
+        headerAccessor.getSessionAttributes().put("room_id", roomId);
+        headerAccessor.getSessionAttributes().put("username", newPlayer.getName());
+
         GameRoom gameRoom = roomService.getRoom(roomId);
 
-        if(gameRoom == null){
-
-            logger.info("Room " + roomId + " does not exist");
-            messagingTemplate.convertAndSend("/room/" + roomId, "Room does not exist");
+        if (gameRoom == null) {
+            sendError(
+                    roomId,
+                    newPlayer,
+                    "Room " + roomId + " does not exist"
+            );
             return;
         }
 
         boolean added = gameRoom.AddPlayer(newPlayer);
 
-        if(added){
-            logger.info("Player\"" + newPlayer.getName()+"\" joined room: " + roomId);
-            messagingTemplate.convertAndSend("/room/" + roomId , gameRoom.getPlayerNames());
-        }else{
-            logger.info("Player name\"" + newPlayer.getName()+"\" already exists in room: " + roomId);
-            messagingTemplate.convertAndSend("/room/" + roomId, "Player name\"" + newPlayer.getName()+"\" already exists in room: " + roomId);
+        if (added) {
+            logger.info("Player \"" + newPlayer.getName() + "\" joined room: " + roomId);
+
+            JSONObject message = new JSONObject();
+            message.put("players", gameRoom.getPlayerNames());
+
+            messagingTemplate.convertAndSend("/room/" + roomId, message.toString());
+        } else {
+            sendError(
+                    roomId,
+                    newPlayer,
+                    "Player name \"" + newPlayer.getName() + "\" already exists in room: " + roomId
+            );
         }
+    }
+
+
+    private void sendError(String roomId, Player player, String message) {
+        logger.info(message);
+
+        JSONObject error = new JSONObject();
+        error.put("error", message);
+        error.put("player", player);
+
+        messagingTemplate.convertAndSend("/room/" + roomId, error.toString());
     }
 
 }

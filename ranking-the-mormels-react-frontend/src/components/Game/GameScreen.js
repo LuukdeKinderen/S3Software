@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 
-import { useParams } from 'react-router-dom'
-
 import LobbyScreen from './LobbyScreen';
 
 
@@ -10,8 +8,9 @@ import LobbyScreen from './LobbyScreen';
 
 export default function GameScreen(props) {
 
-    let { roomId } = useParams();
-    const [question, setQuestion] = useState(JSON.parse(sessionStorage.getItem('question')) || '');
+    var roomId = sessionStorage.getItem('roomId');
+    const [question, setQuestion] = useState(JSON.parse(sessionStorage.getItem('question')) || null);
+    const [players] = useState(JSON.parse(sessionStorage.getItem('players')))
 
     useEffect(() => {
         sessionStorage.setItem('question', JSON.stringify(question))
@@ -20,10 +19,9 @@ export default function GameScreen(props) {
 
     if (question === '') {
         return (
-            <LobbyScreen setQuestion={setQuestion} client={props.client} roomId={roomId} subscribe={props.subscribe} />
+            <LobbyScreen setQuestion={setQuestion} roomId={roomId} />
         );
     } else {
-        console.log(question);
         return (<p>Game component</p>);
     }
 }

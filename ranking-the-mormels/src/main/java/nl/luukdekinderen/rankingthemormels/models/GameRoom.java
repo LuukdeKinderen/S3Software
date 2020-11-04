@@ -1,8 +1,7 @@
 package nl.luukdekinderen.rankingthemormels.models;
 
-import java.util.ArrayList;
+
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class GameRoom {
@@ -25,6 +24,10 @@ public class GameRoom {
             return true;
         }
         return false;
+    }
+
+    public List<Player> getPlayers(){
+        return players;
     }
 
     public void NextQuestion(){

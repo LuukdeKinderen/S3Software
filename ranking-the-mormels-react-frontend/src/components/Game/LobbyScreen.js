@@ -5,7 +5,7 @@ import Button from "@material-ui/core/Button";
 
 export default function LobbyScreen(props) {
 
-    const [players, setPlayers] = useState(JSON.parse(sessionStorage.getItem('players')) || null);
+    const [players] = useState(JSON.parse(sessionStorage.getItem('players')) || null);
     const [player, setPlayer] = useState(JSON.parse(sessionStorage.getItem('player')) || '')
 
 
@@ -14,43 +14,18 @@ export default function LobbyScreen(props) {
     }, [players]);
 
 
-    useEffect(() => {
-        if (player != null) {
-            var url = `/room/${props.roomId}`;
-            if (player.host) {
-                props.subscribe(
-                    url,
-                    () => function (message) {
-                        setPlayers(JSON.parse(message.body));
-                    },
-                    { destination: `/app/room/${props.roomId}/players`, body: '' }
-                );
-            }
-            else {
-                props.subscribe(
-                    url,
-                    () => function (message) {
-                        props.setQuestion(JSON.parse(message.body));
-                    },
-                );
-            }
-        }
-    }, [player]);
-
-
-
     if (player.host) {
         function start() {
             var url = `/room/${props.roomId}`;
-            props.subscribe(
-                url,
-                () => function (message) {
-                    if (JSON.parse(message.body).question != null) {
-                        props.setQuestion(JSON.parse(message.body));
-                    }
-                },
-                { destination: `/app/game/${props.roomId}/nextQuestion`, body: sessionStorage.getItem('playerHash') }
-            );
+            // props.subscribe(
+            //     url,
+            //     () => function (message) {
+            //         if (JSON.parse(message.body).question != null) {
+            //             props.setQuestion(JSON.parse(message.body));
+            //         }
+            //     },
+            //     { destination: `/app/game/${props.roomId}/nextQuestion`, body: sessionStorage.getItem('playerHash') }
+            // );
         }
 
 
@@ -77,7 +52,7 @@ export default function LobbyScreen(props) {
                 </>
             );
             if (players.length > 4) {
-                console.log('test');
+               // console.log('test');
                 StartButton =
                     (<Button variant="contained" color="primary" onClick={() => start()} size="large">
                         START

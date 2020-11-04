@@ -1,112 +1,124 @@
+import React, { useState } from "react";
+import {
+    List,
+    ListItem,
+    ListItemText,
+    ListItemIcon,
+    ListItemSecondaryAction
+} from "@material-ui/core";
+import RootRef from "@material-ui/core/RootRef";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
-import React, { useState } from 'react'
+import images from '../../Images/playerImages/playerImage'
 
 
-import Chip from '@material-ui/core/Chip';
-import DoneIcon from '@material-ui/icons/Done';
-import Grid from '@material-ui/core/Grid';
-import Button from "@material-ui/core/Button";
+// a little function to help us with reordering the result
+const reorder = (list, startIndex, endIndex) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+
+    result.forEach((item, key) => {
+        switch (key) {
+            case 0:
+                item.ranking = '1st'
+                break;
+            case 1:
+                item.ranking = '2nd'
+                break;
+            case 2:
+                item.ranking = '3th'
+                break;
+            case result.length - 1:
+                item.ranking = 'Last best'
+                break;
+            default:
+                item.ranking = null
+                break;
+        }
+    });
+
+    return result;
+};
+
+const getItemStyle = (isDragging, draggableStyle) => ({
+    // styles we need to apply on draggables
+    ...draggableStyle,
+
+    ...(isDragging && {
+        background: "rgb(235,235,235)"
+    })
+});
+
+
 
 export default function Ranking(props) {
 
-    var players = props.players;//.sort((a, b) => (a.ranking < b.ranking || a.ranking === null) ? 1 : ((b.ranking < a.ranking || b.ranking === null) ? -1 : 0));
-    //players = players.sort((a, b) => (a.ranking < b.ranking) ? 1 : ((b.ranking < a.ranking) ? -1 : 0));
+    const [items, setItems] = useState(props.players);
 
-
-    const [newRanking, setNewRanking] = useState(5);
-
-
-    function sendData() {
-        console.log("ready to send!");
-    }
-
-
-
-    function setRanking(player) {
-        setNewRanking(newRanking - 2);
-        player.ranking = newRanking;
-    }
-
-    function deleteRanking(player) {
-        setNewRanking(newRanking + 2);
-        players.forEach(Oplayer => {
-            if (Oplayer.ranking < player.ranking && Oplayer.ranking != null) {
-                Oplayer.ranking += 2;
-            }
-        });
-        player.ranking = null;
-    }
-    function rankingLabel(ranking) {
-
-        switch (ranking) {
-            case 5:
-                return "1st"
-                break;
-            case 3:
-                return "2nd"
-                break;
-            case 1:
-                return "3th"
-                break;
-            case -1:
-                return "Last best"
-                break;
+    function onDragEnd(result) {
+        // dropped outside the list
+        if (!result.destination) {
+            return;
         }
-    }
 
-    function rankingObject(player) {
-        if (player.ranking != null) {
-            return <>
-                <div style={{minWidth:'50%'}}>
-                    <Button variant="contained" color="primary" disabled>{player.name}</Button>
-                </div>
-                <div style={{minWidth:'50%'}}>
-                    <Chip label={rankingLabel(player.ranking)} onDelete={() => deleteRanking(player)} />
-                </div>
-            </>;
-        } else if (newRanking >= -1) {
-            return <>
-                <div style={{minWidth:'50%'}}>
-                    <Button variant="contained" color="primary" onClick={() => setRanking(player)}>{player.name}</Button>
-                </div>
-            </>;
-        } else {
-            return <>
-                <div style={{minWidth:'50%'}}>
-                    <Button variant="contained" color="primary" disabled>{player.name}</Button>
-                </div>
-                
-            </>;
-        }
-    }
-    function sendRankingObject() {
-        if (newRanking < -1) { return <p>test</p> }
+        setItems(
+            reorder(
+                items,
+                result.source.index,
+                result.destination.index
+            )
+        );
+
+        // this.setState({
+        //     items
+        // });
     }
 
 
     return (
-        <>
-            <Grid
-                container
-            //spacing={2}
-            >
-                {
-                    players.map((player, key) =>
-                        <Grid style={{ padding: '20px' }} item key={key} xs={12} sm={6}>
-                            <Grid
-                                container
-                                direction="row"
-                                justify="center"
-                                spacing={2}
-                            >
-
-                                {rankingObject(player)}
-
-                            </Grid>
-                        </Grid>
-                    )}
-                {sendRankingObject()}
-            </Grid>
-        </>
+        <DragDropContext onDragEnd={(result) => onDragEnd(result)}>
+            <Droppable droppableId="droppable">
+                {(provided, snapshot) => (
+                    <RootRef rootRef={provided.innerRef}>
+                        <List>
+                            {items.map((item, index) => (
+                                <Draggable key={item.id} draggableId={item.id} index={index}>
+                                    {(provided, snapshot) => (
+                                        <ListItem
+                                            ContainerComponent="li"
+                                            ContainerProps={{ ref: provided.innerRef }}
+                                            {...provided.draggableProps}
+                                            {...provided.dragHandleProps}
+                                            style={getItemStyle(
+                                                snapshot.isDragging,
+                                                provided.draggableProps.style
+                                            )}
+                                        >
+                                            <ListItemIcon>
+                                                {/* <InboxIcon /> */}
+                                                <img alt="Mormel logo" src={images[item.image]} style={{ width: '100%', marginRight: '5px' }} />
+                                            </ListItemIcon>
+                                            <ListItemText
+                                                primary={item.name}
+                                                secondary={item.ranking ? <b>{item.ranking}</b> : <i>neutral </i>}
+                                            />
+                                            <ListItemSecondaryAction>
+                                                {/* <IconButton>
+                                                    <EditIcon />
+                                                </IconButton> */}
+                                            </ListItemSecondaryAction>
+                                        </ListItem>
+                                    )}
+                                </Draggable>
+                            ))}
+                            {provided.placeholder}
+                        </List>
+                    </RootRef>
+                )}
+            </Droppable>
+        </DragDropContext>
     );
 }
+
+
