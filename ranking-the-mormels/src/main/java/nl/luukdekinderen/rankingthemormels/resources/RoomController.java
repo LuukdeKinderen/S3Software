@@ -11,7 +11,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 
 
@@ -36,6 +35,7 @@ public class RoomController {
     public void addRooms(@Payload GameRoom gameRoom, SimpMessageHeaderAccessor headerAccessor) {
         String roomId = gameRoom.getId();
         Player player = gameRoom.getPlayers().get(0);
+        player.setImageIndex(0);
 
         headerAccessor.getSessionAttributes().put("room_id", roomId);
         headerAccessor.getSessionAttributes().put("username", player.getName());
@@ -46,7 +46,7 @@ public class RoomController {
             logger.info("Room created: " + roomId);
 
             JSONObject message = new JSONObject();
-            message.put("players", gameRoom.getPlayerNames());
+            message.put("players", gameRoom.getPlayerObjects());
 
             messagingTemplate.convertAndSend("/room/" + roomId, message.toString());
         } else {
@@ -82,7 +82,7 @@ public class RoomController {
             logger.info("Player \"" + newPlayer.getName() + "\" joined room: " + roomId);
 
             JSONObject message = new JSONObject();
-            message.put("players", gameRoom.getPlayerNames());
+            message.put("players", gameRoom.getPlayerObjects());
 
             messagingTemplate.convertAndSend("/room/" + roomId, message.toString());
         } else {

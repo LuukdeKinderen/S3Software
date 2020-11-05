@@ -1,6 +1,8 @@
 package nl.luukdekinderen.rankingthemormels.models;
 
 
+import org.json.JSONObject;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,18 +21,20 @@ public class GameRoom {
                 flag = true;
             }
         }
-        if(!flag){
+        if (!flag) {
+            newPlayer.setImageIndex(players.size());
             players.add(newPlayer);
             return true;
         }
         return false;
     }
 
-    public List<Player> getPlayers(){
+    public List<Player> getPlayers() {
         return players;
     }
 
-    public void NextQuestion(){
+
+    public void NextQuestion() {
         currentQuestionCount++;
         //check for end of game
 
@@ -39,32 +43,32 @@ public class GameRoom {
         //clear all player rankings
 
         //start timer
-            // after timer => SendAverageRanking()
+        // after timer => SendAverageRanking()
 
     }
 
 
     // Do on every player Ranking update
-    public void DidFinishRankings(){
+    public void DidFinishRankings() {
         // check if all players finished sending ranking
 
         // if true
-            // stopTimer
-            // SendRanking()
+        // stopTimer
+        // SendRanking()
 
     }
 
-    private void SendAverageRanking(){
+    private void SendAverageRanking() {
         // CalculateAverageRanking()
         // CreateTaskForRanking()
         // Send task to frontEnd
     }
 
-    private Ranking CalculateAverageRanking(){
-        return new Ranking("test","test","test","test");
+    private Ranking CalculateAverageRanking() {
+        return new Ranking("test", "test", "test", "test");
     }
 
-    private String CreateTaskForRanking(Ranking ranking){
+    private String CreateTaskForRanking(Ranking ranking) {
         return "test";
     }
 
@@ -73,11 +77,19 @@ public class GameRoom {
         return id;
     }
 
-
-    public List<String> getPlayerNames(){
-        List<String> names = players.stream()
-                .map(Player::getName)
+    public List<JSONObject> getPlayerObjects() {
+        List<JSONObject> playerObjs = players.stream()
+                .map(Player::toJSONObject)
                 .collect(Collectors.toList());
-        return names;
+        return playerObjs;
+    }
+
+    public boolean isRealHost(String playerId) {
+        for (Player player : players){
+            if(player.getId().equals(playerId) && player.isHost()){
+                return true;
+            }
+        }
+        return false;
     }
 }

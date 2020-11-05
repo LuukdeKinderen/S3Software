@@ -76,58 +76,55 @@ export default function LogonScreen(props) {
 
     return (
         <>
-            <Grid
-                container
-                direction="column"
-                justify="space-between"
-                alignItems="center"
-                style={{ height: "100vh" }}
-            >
-                <Grid item >
-                    <img alt="Mormel logo" src={logo} width='100%' />
-                    <h1>Ranking the Mormels</h1>
-                    <form onSubmit={(e) => Join(e)}>
-                        <Grid
 
-                            container
-                            direction="column"
-                            justify="space-evenly"
-                            alignItems="center"
-                            spacing={3}
-                        >
-                            <Grid item>
-                                <TextField
-                                    InputProps={{ inputProps: { minLength: 3, maxLength: 20 } }}
-                                    required
-                                    label="Nick name"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                />
-                            </Grid>
-                            <Grid item>
-                                <TextField
-                                    InputProps={{ inputProps: { maxLength: 4 } }}
-                                    required
-                                    disabled={host}
-                                    label="Room code"
-                                    value={roomId}
-                                    onChange={(e) => setRoomId(e.target.value)}
-                                />
-                            </Grid>
-                            <Grid item>
-                                <Button variant="contained" color="primary" type="submit" size="large">
-                                    {host ? 'HOST' : 'JOIN'}
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </form>
+            <img alt="Mormel logo" src={logo} width='70%' style={{ maxWidth: '400px', display: 'block', marginLeft: 'auto', marginRight: 'auto' }} />
+            <h1>Ranking the Mormels</h1>
+            <form onSubmit={(e) => Join(e)}>
+                <Grid
+
+                    container
+                    direction="column"
+                    justify="space-evenly"
+                    alignItems="center"
+                    spacing={3}
+                >
+                    <Grid item>
+                        <TextField
+                            InputProps={{ inputProps: { minLength: 3, maxLength: 20 } }}
+                            required
+                            label="Nick name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                        />
+                    </Grid>
+                    <Grid item>
+                        <TextField
+                            InputProps={{ inputProps: { maxLength: 4 } }}
+                            required
+                            disabled={host}
+                            label="Room code"
+                            value={roomId}
+                            onChange={(e) => setRoomId(e.target.value)}
+                        />
+                    </Grid>
+                    <Grid item>
+                        <Button variant="contained" color="primary" type="submit" size="large">
+                            {host ? 'HOST' : 'JOIN'}
+                        </Button>
+                    </Grid>
                 </Grid>
-                <Grid item >
-                    <Button style={{}} onClick={() => ChangeHost()}>
-                        {host ? 'Or Join a room...' : 'Or host a room...'}
-                    </Button>
-                </Grid>
-            </Grid>
+            </form>
+
+
+
+            <Button style={{
+                position: 'absolute',
+                bottom: '0px'
+            }} onClick={() => ChangeHost()}>
+                {host ? 'Or Join a room...' : 'Or host a room...'}
+            </Button>
+
+
         </>
     );
 }

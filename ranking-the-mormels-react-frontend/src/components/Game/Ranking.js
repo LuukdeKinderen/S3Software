@@ -4,8 +4,10 @@ import {
     ListItem,
     ListItemText,
     ListItemIcon,
-    ListItemSecondaryAction
+    ListItemSecondaryAction,
+    ListSubheader
 } from "@material-ui/core";
+import { makeStyles } from '@material-ui/core/styles';
 import RootRef from "@material-ui/core/RootRef";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
@@ -50,11 +52,24 @@ const getItemStyle = (isDragging, draggableStyle) => ({
     })
 });
 
+const useStyles = makeStyles((theme) => ({
+    root: {
+        width: '100%',
+        backgroundColor: theme.palette.background.paper,
+    },
+}));
 
 
 export default function Ranking(props) {
+    const classes = useStyles();
 
-    const [items, setItems] = useState(props.players);
+    var players = props.players;
+
+    players = players.filter(function (obj) {
+        return obj.id !== props.player.id;
+    });
+
+    const [items, setItems] = useState(players);
 
     function onDragEnd(result) {
         // dropped outside the list
@@ -81,7 +96,14 @@ export default function Ranking(props) {
             <Droppable droppableId="droppable">
                 {(provided, snapshot) => (
                     <RootRef rootRef={provided.innerRef}>
-                        <List>
+                        <List
+                            className={classes.root}
+                            subheader={
+                                <ListSubheader component="div" id="nested-list-subheader">
+                                    Ranking:
+                                </ListSubheader>
+                            }
+                        >
                             {items.map((item, index) => (
                                 <Draggable key={item.id} draggableId={item.id} index={index}>
                                     {(provided, snapshot) => (
@@ -96,18 +118,13 @@ export default function Ranking(props) {
                                             )}
                                         >
                                             <ListItemIcon>
-                                                {/* <InboxIcon /> */}
-                                                <img alt="Mormel logo" src={images[item.image]} style={{ width: '100%', marginRight: '5px' }} />
+                                                <img alt="Mormel logo" src={images[item.imageIndex]} style={{ width: '100%', marginRight: '5px' }} />
                                             </ListItemIcon>
                                             <ListItemText
                                                 primary={item.name}
-                                                secondary={item.ranking ? <b>{item.ranking}</b> : <i>neutral </i>}
+                                                secondary={item.ranking ? <b>{item.ranking}</b> : <i> neutral </i>}
                                             />
-                                            <ListItemSecondaryAction>
-                                                {/* <IconButton>
-                                                    <EditIcon />
-                                                </IconButton> */}
-                                            </ListItemSecondaryAction>
+                                            <ListItemSecondaryAction />
                                         </ListItem>
                                     )}
                                 </Draggable>
