@@ -16,6 +16,7 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 import images from '../../Images/playerImages/playerImage'
 
+import { publish } from '../Websocket'
 
 // a little function to help us with reordering the result
 const reorder = (list, startIndex, endIndex) => {
@@ -65,10 +66,12 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Ranking(props) {
     const classes = useStyles();
+    const player = JSON.parse(sessionStorage.getItem("player"));
+    const roomId = sessionStorage.getItem("roomId");
 
     var players = props.players;
     players = players.filter(function (obj) {
-        return obj.id !== props.player.id;
+        return obj.id !== player.id;
     });
 
     const [items, setItems] = useState(players);
@@ -88,15 +91,15 @@ export default function Ranking(props) {
         );
     }
 
-    function sendRanking(items) {
+    function sendRanking() {
         var ranking = {
             firstId: items[0].id,
             secondId: items[1].id,
             thirdId: items[2].id,
             lastBestId: items[items.length - 1].id
         }
-        props.publish(
-            { destination: `/app/game/${props.roomId}/result`, body: JSON.stringify(ranking, props.player.id) }
+        publish(
+            { destination: `/app/game/${roomId}/result`, body: JSON.stringify(ranking, player.id) }
         );
         console.log(ranking);
     }
@@ -147,7 +150,7 @@ export default function Ranking(props) {
                     )}
                 </Droppable>
             </DragDropContext>
-            <Button variant="contained" color="primary" onClick={() => sendRanking(items)} size="large">
+            <Button variant="contained" color="primary" onClick={() => sendRanking()} size="large">
                 SEND RANKING
             </Button>
         </>

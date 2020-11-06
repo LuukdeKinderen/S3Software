@@ -31,7 +31,7 @@ client.onConnect = () => {
 client.activate();
 
 var subscription = null;
-var messageHandler = () => { };
+let messageHandler = () => { };
 
 export function subscribe(newRoomId) {
     if (subscription != null) {
@@ -46,5 +46,10 @@ export function publish(publish) {
     client.publish(publish);
 }
 export function setMessageHandler(newMessageHandler) {
-    messageHandler = newMessageHandler;
+    messageHandler = (msg) => {
+        newMessageHandler(msg);
+        if (process.env.NODE_ENV !== 'production') {
+            console.log(msg)
+        }
+    };
 }

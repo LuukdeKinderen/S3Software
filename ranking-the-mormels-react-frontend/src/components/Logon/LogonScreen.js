@@ -6,19 +6,20 @@ import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import Grid from '@material-ui/core/Grid';
 
-import logo from '../../Images/mormel.svg'
-import { makeid } from '../../HelperFunctions'
+import logo from '../../Images/mormel.svg';
+import { makeid } from '../../HelperFunctions';
+
+import { publish, subscribe } from '../Websocket';
 
 
-export default function LogonScreen(props) {
+export default function LogonScreen() {
 
     const history = useHistory();
 
     const [name, setName] = useState("");
     const [roomId, setRoomId] = useState("");
-    const [host, setHost] = useState(false);
+    const [host, setHost] = useState(false); 
 
-    var player = JSON.parse(sessionStorage.getItem('player'))
 
 
     useEffect(() => {
@@ -29,13 +30,6 @@ export default function LogonScreen(props) {
             });
     }, [])
 
-    useEffect(() => {
-        if (props.message != null && props.message.joinRoom != null) {
-            if (props.message.joinRoom.id === player.id) {
-                history.push(`/Game`);
-            }
-        }
-    }, [props.message, history, player])
 
 
     function ChangeHost() {
@@ -49,27 +43,30 @@ export default function LogonScreen(props) {
 
     function Join(e) {
         e.preventDefault();
-        var publish = null;
         var newPlayer = {
-            id: player.id,
+            id: makeid(25),
             name: name,
             drinkCount: 0,
             host: true
         }
+
+        sessionStorage.setItem('roomId', roomId);
+        subscribe(roomId);
+
+
         if (host) {
             var gameRoom = {
                 id: roomId,
                 players: [newPlayer],
             };
-            publish = { destination: '/app/room/create', body: JSON.stringify(gameRoom) };
+            publish({ destination: '/app/room/create', body: JSON.stringify(gameRoom) });
         } else {
             newPlayer.host = false;
-            publish = { destination: `/app/room/${roomId}/addPlayer`, body: JSON.stringify(newPlayer) };
+            publish({ destination: `/app/room/${roomId}/addPlayer`, body: JSON.stringify(newPlayer) });
         }
-        props.setPlayer(newPlayer);
-        props.setRoomId(roomId);
-        props.subscribe(roomId);
-        props.publish(publish);
+
+        sessionStorage.setItem('player', JSON.stringify(newPlayer))
+        history.push(`/Game`);
     }
 
 

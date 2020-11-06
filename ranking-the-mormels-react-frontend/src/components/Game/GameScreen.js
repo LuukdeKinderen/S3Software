@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import LobbyScreen from './LobbyScreen';
 import Ranking from './Ranking';
@@ -7,21 +7,20 @@ import Ranking from './Ranking';
 
 
 
-export default function GameScreen(props) {
+export default function GameScreen() {
+    const [players, setPlayers] = useState(null);
+    const [question, setQuestion] = useState(null);
 
-    var roomId = sessionStorage.getItem('roomId');
 
-
-
-    if (props.question === null) {
+    if (question === null) {
         return (
-            <LobbyScreen player={props.player} publish={props.publish} players={props.players} roomId={roomId} />
+            <LobbyScreen setPlayers={setPlayers} setQuestion={setQuestion} />
         );
     } else {
         return (
             <>
-                <p>Question: {props.question}</p>
-                <Ranking publish={props.publish} players={props.players} player={props.player} />
+                <p>Question: {question}</p>
+                <Ranking players={players} setQuestion={setQuestion} />
             </>
         );
     }
