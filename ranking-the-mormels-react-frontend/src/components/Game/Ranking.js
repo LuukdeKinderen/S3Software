@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 import {
     List,
     ListItem,
@@ -7,6 +8,8 @@ import {
     ListItemSecondaryAction,
     ListSubheader
 } from "@material-ui/core";
+import Button from "@material-ui/core/Button";
+
 import { makeStyles } from '@material-ui/core/styles';
 import RootRef from "@material-ui/core/RootRef";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -64,7 +67,6 @@ export default function Ranking(props) {
     const classes = useStyles();
 
     var players = props.players;
-
     players = players.filter(function (obj) {
         return obj.id !== props.player.id;
     });
@@ -84,57 +86,71 @@ export default function Ranking(props) {
                 result.destination.index
             )
         );
+    }
 
-        // this.setState({
-        //     items
-        // });
+    function sendRanking(items) {
+        var ranking = {
+            firstId: items[0].id,
+            secondId: items[1].id,
+            thirdId: items[2].id,
+            lastBestId: items[items.length - 1].id
+        }
+        props.publish(
+            { destination: `/app/game/${props.roomId}/result`, body: JSON.stringify(ranking, props.player.id) }
+        );
+        console.log(ranking);
     }
 
 
     return (
-        <DragDropContext onDragEnd={(result) => onDragEnd(result)}>
-            <Droppable droppableId="droppable">
-                {(provided, snapshot) => (
-                    <RootRef rootRef={provided.innerRef}>
-                        <List
-                            className={classes.root}
-                            subheader={
-                                <ListSubheader component="div" id="nested-list-subheader">
-                                    Ranking:
+        <>
+            <DragDropContext onDragEnd={(result) => onDragEnd(result)}>
+                <Droppable droppableId="droppable">
+                    {(provided) => (
+                        <RootRef rootRef={provided.innerRef}>
+                            <List
+                                className={classes.root}
+                                subheader={
+                                    <ListSubheader component="div" id="nested-list-subheader">
+                                        Ranking:
                                 </ListSubheader>
-                            }
-                        >
-                            {items.map((item, index) => (
-                                <Draggable key={item.id} draggableId={item.id} index={index}>
-                                    {(provided, snapshot) => (
-                                        <ListItem
-                                            ContainerComponent="li"
-                                            ContainerProps={{ ref: provided.innerRef }}
-                                            {...provided.draggableProps}
-                                            {...provided.dragHandleProps}
-                                            style={getItemStyle(
-                                                snapshot.isDragging,
-                                                provided.draggableProps.style
-                                            )}
-                                        >
-                                            <ListItemIcon>
-                                                <img alt="Mormel logo" src={images[item.imageIndex]} style={{ width: '100%', marginRight: '5px' }} />
-                                            </ListItemIcon>
-                                            <ListItemText
-                                                primary={item.name}
-                                                secondary={item.ranking ? <b>{item.ranking}</b> : <i> neutral </i>}
-                                            />
-                                            <ListItemSecondaryAction />
-                                        </ListItem>
-                                    )}
-                                </Draggable>
-                            ))}
-                            {provided.placeholder}
-                        </List>
-                    </RootRef>
-                )}
-            </Droppable>
-        </DragDropContext>
+                                }
+                            >
+                                {items.map((item, index) => (
+                                    <Draggable key={item.id} draggableId={item.id} index={index}>
+                                        {(provided, snapshot) => (
+                                            <ListItem
+                                                ContainerComponent="li"
+                                                ContainerProps={{ ref: provided.innerRef }}
+                                                {...provided.draggableProps}
+                                                {...provided.dragHandleProps}
+                                                style={getItemStyle(
+                                                    snapshot.isDragging,
+                                                    provided.draggableProps.style
+                                                )}
+                                            >
+                                                <ListItemIcon>
+                                                    <img alt="Mormel logo" src={images[item.imageIndex]} style={{ width: '100%', marginRight: '5px' }} />
+                                                </ListItemIcon>
+                                                <ListItemText
+                                                    primary={item.name}
+                                                    secondary={item.ranking ? <b>{item.ranking}</b> : <i> neutral </i>}
+                                                />
+                                                <ListItemSecondaryAction />
+                                            </ListItem>
+                                        )}
+                                    </Draggable>
+                                ))}
+                                {provided.placeholder}
+                            </List>
+                        </RootRef>
+                    )}
+                </Droppable>
+            </DragDropContext>
+            <Button variant="contained" color="primary" onClick={() => sendRanking(items)} size="large">
+                SEND RANKING
+            </Button>
+        </>
     );
 }
 

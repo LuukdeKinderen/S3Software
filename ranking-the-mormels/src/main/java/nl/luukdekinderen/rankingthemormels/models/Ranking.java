@@ -1,31 +1,31 @@
 package nl.luukdekinderen.rankingthemormels.models;
 
 public class Ranking {
-    private String firstName;
-    private String secondName;
-    private String thirdName;
-    private String lastBestName;
+    private String firstId;
+    private String secondId;
+    private String thirdId;
+    private String lastBestId;
 
-    public Ranking(String firstName, String secondName, String thirdName, String lastBestName) {
-        this.firstName = firstName;
-        this.secondName = secondName;
-        this.thirdName = thirdName;
-        this.lastBestName = lastBestName;
+    public Ranking(String firstId, String secondId, String thirdId, String lastBestId) {
+        this.firstId = firstId;
+        this.secondId = secondId;
+        this.thirdId = thirdId;
+        this.lastBestId = lastBestId;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getFirstId() {
+        return firstId;
     }
 
-    public String getSecondName() {
-        return secondName;
+    public String getSecondId() {
+        return secondId;
     }
 
-    public String getThirdName() {
-        return thirdName;
+    public String getThirdId() {
+        return thirdId;
     }
 
-    public String getLastBestName() {
-        return lastBestName;
+    public String getLastBestId() {
+        return lastBestId;
     }
 }

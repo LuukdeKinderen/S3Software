@@ -47,6 +47,7 @@ public class RoomController {
 
             JSONObject message = new JSONObject();
             message.put("players", gameRoom.getPlayerObjects());
+            message.put("joinRoom", player.toJSONObject());
 
             messagingTemplate.convertAndSend("/room/" + roomId, message.toString());
         } else {
@@ -83,6 +84,7 @@ public class RoomController {
 
             JSONObject message = new JSONObject();
             message.put("players", gameRoom.getPlayerObjects());
+            message.put("joinRoom", newPlayer.toJSONObject());
 
             messagingTemplate.convertAndSend("/room/" + roomId, message.toString());
         } else {
@@ -100,7 +102,7 @@ public class RoomController {
 
         JSONObject error = new JSONObject();
         error.put("error", message);
-        error.put("player", player);
+        error.put("player", player.toJSONObject());
 
         messagingTemplate.convertAndSend("/room/" + roomId, error.toString());
     }

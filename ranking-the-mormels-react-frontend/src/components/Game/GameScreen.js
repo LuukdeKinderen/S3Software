@@ -20,8 +20,8 @@ export default function GameScreen(props) {
     } else {
         return (
             <>
-                <p>Q: {props.question}</p>
-                <Ranking players={props.players} player={props.player} />
+                <p>Question: {props.question}</p>
+                <Ranking publish={props.publish} players={props.players} player={props.player} />
             </>
         );
     }

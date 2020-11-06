@@ -31,21 +31,7 @@ public class GameController {
     @Autowired
     private RoomService roomService;
 
-    @MessageMapping("/game/{roomId}/start")
-    public void joinRoom(@DestinationVariable String roomId, @Payload Player player) {
-
-        GameRoom room = roomService.getRoom(roomId);
-
-        if(room.isRealHost(player.getId())){
-
-            JSONObject message = new JSONObject();
-            message.put("question", "Wie is de aardigste speler!");
-
-            messagingTemplate.convertAndSend("/room/" + roomId, message.toString());
-        }
-    }
-
-    @MessageMapping("/game/{roomId}/newQuestion")
+    @MessageMapping("/game/{roomId}/new-question")
     public void newQuestion(@DestinationVariable String roomId, @Payload Player player) {
 
         GameRoom room = roomService.getRoom(roomId);

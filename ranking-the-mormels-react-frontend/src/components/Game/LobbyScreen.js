@@ -26,7 +26,7 @@ export default function LobbyScreen(props) {
 
         function start() {
             props.publish(
-                { destination: `/app/game/${props.roomId}/start`, body: JSON.stringify(props.player) }
+                { destination: `/app/game/${props.roomId}/new-question`, body: JSON.stringify(props.player) }
             );
         }
 

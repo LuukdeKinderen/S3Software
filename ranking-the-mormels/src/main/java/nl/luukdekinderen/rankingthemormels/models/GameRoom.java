@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 public class GameRoom {
 
-
     private String id;
     private List<Player> players;
     private int currentQuestionCount;
@@ -17,7 +16,7 @@ public class GameRoom {
     public boolean AddPlayer(Player newPlayer) {
         boolean flag = false;
         for (Player player : players) {
-            if (newPlayer.getName() == player.getName()) {
+            if (newPlayer.getName().equals(player.getName())) {
                 flag = true;
             }
         }

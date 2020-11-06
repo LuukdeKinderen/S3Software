@@ -9,6 +9,7 @@ public class Player {
     private int imageIndex;
     private int drinkCount;
     private boolean host;
+
     private Ranking ranking;
 
     public String getId() {

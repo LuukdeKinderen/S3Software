@@ -7,6 +7,7 @@ import Button from "@material-ui/core/Button";
 import Grid from '@material-ui/core/Grid';
 
 import logo from '../../Images/mormel.svg'
+import { makeid } from '../../HelperFunctions'
 
 
 export default function LogonScreen(props) {
@@ -17,6 +18,8 @@ export default function LogonScreen(props) {
     const [roomId, setRoomId] = useState("");
     const [host, setHost] = useState(false);
 
+    var player = JSON.parse(sessionStorage.getItem('player'))
+
 
     useEffect(() => {
         fetch("https://randomuser.me/api/")
@@ -25,6 +28,14 @@ export default function LogonScreen(props) {
                 setName(res.results[0].login.username);
             });
     }, [])
+
+    useEffect(() => {
+        if (props.message != null && props.message.joinRoom != null) {
+            if (props.message.joinRoom.id === player.id) {
+                history.push(`/Game`);
+            }
+        }
+    }, [props.message, history, player])
 
 
     function ChangeHost() {
@@ -39,8 +50,8 @@ export default function LogonScreen(props) {
     function Join(e) {
         e.preventDefault();
         var publish = null;
-        var player = {
-            id: JSON.parse(sessionStorage.getItem('player')).id,
+        var newPlayer = {
+            id: player.id,
             name: name,
             drinkCount: 0,
             host: true
@@ -48,28 +59,17 @@ export default function LogonScreen(props) {
         if (host) {
             var gameRoom = {
                 id: roomId,
-                players: [player],
+                players: [newPlayer],
             };
             publish = { destination: '/app/room/create', body: JSON.stringify(gameRoom) };
         } else {
-            player.host = false;
-            publish = { destination: `/app/room/${roomId}/addPlayer`, body: JSON.stringify(player) };
+            newPlayer.host = false;
+            publish = { destination: `/app/room/${roomId}/addPlayer`, body: JSON.stringify(newPlayer) };
         }
-        props.setPlayer(player);
+        props.setPlayer(newPlayer);
         props.setRoomId(roomId);
         props.subscribe(roomId);
         props.publish(publish);
-        history.push(`/Game`);
-    }
-
-    function makeid(length) {
-        var result = '';
-        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        var charactersLength = characters.length;
-        for (var i = 0; i < length; i++) {
-            result += characters.charAt(Math.floor(Math.random() * charactersLength));
-        }
-        return result;
     }
 
 
