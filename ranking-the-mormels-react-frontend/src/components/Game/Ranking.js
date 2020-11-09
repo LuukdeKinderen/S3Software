@@ -1,112 +1,160 @@
+import React, { useState } from "react";
 
-import React, { useState } from 'react'
-
-
-import Chip from '@material-ui/core/Chip';
-import DoneIcon from '@material-ui/icons/Done';
-import Grid from '@material-ui/core/Grid';
+import {
+    List,
+    ListItem,
+    ListItemText,
+    ListItemIcon,
+    ListItemSecondaryAction,
+    ListSubheader
+} from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 
-export default function Ranking(props) {
+import { makeStyles } from '@material-ui/core/styles';
+import RootRef from "@material-ui/core/RootRef";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
-    var players = props.players;//.sort((a, b) => (a.ranking < b.ranking || a.ranking === null) ? 1 : ((b.ranking < a.ranking || b.ranking === null) ? -1 : 0));
-    //players = players.sort((a, b) => (a.ranking < b.ranking) ? 1 : ((b.ranking < a.ranking) ? -1 : 0));
+import images from '../../Images/playerImages/playerImage'
 
+import { publish } from '../Websocket'
 
-    const [newRanking, setNewRanking] = useState(5);
+// a little function to help us with reordering the result
+const reorder = (list, startIndex, endIndex) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
 
-
-    function sendData() {
-        console.log("ready to send!");
-    }
-
-
-
-    function setRanking(player) {
-        setNewRanking(newRanking - 2);
-        player.ranking = newRanking;
-    }
-
-    function deleteRanking(player) {
-        setNewRanking(newRanking + 2);
-        players.forEach(Oplayer => {
-            if (Oplayer.ranking < player.ranking && Oplayer.ranking != null) {
-                Oplayer.ranking += 2;
-            }
-        });
-        player.ranking = null;
-    }
-    function rankingLabel(ranking) {
-
-        switch (ranking) {
-            case 5:
-                return "1st"
-                break;
-            case 3:
-                return "2nd"
+    result.forEach((item, key) => {
+        switch (key) {
+            case 0:
+                item.ranking = '1st'
                 break;
             case 1:
-                return "3th"
+                item.ranking = '2nd'
                 break;
-            case -1:
-                return "Last best"
+            case 2:
+                item.ranking = '3th'
+                break;
+            case result.length - 1:
+                item.ranking = 'Last best'
+                break;
+            default:
+                item.ranking = null
                 break;
         }
+    });
+
+    return result;
+};
+
+const getItemStyle = (isDragging, draggableStyle) => ({
+    // styles we need to apply on draggables
+    ...draggableStyle,
+
+    ...(isDragging && {
+        background: "rgb(235,235,235)"
+    })
+});
+
+const useStyles = makeStyles((theme) => ({
+    root: {
+        width: '100%',
+        backgroundColor: theme.palette.background.paper,
+    },
+}));
+
+
+export default function Ranking(props) {
+    const classes = useStyles();
+    const player = JSON.parse(sessionStorage.getItem("player"));
+    const roomId = sessionStorage.getItem("roomId");
+
+    var players = props.players;
+    players = players.filter(function (obj) {
+        return obj.id !== player.id;
+    });
+
+    const [items, setItems] = useState(players);
+
+    function onDragEnd(result) {
+        // dropped outside the list
+        if (!result.destination) {
+            return;
+        }
+
+        setItems(
+            reorder(
+                items,
+                result.source.index,
+                result.destination.index
+            )
+        );
     }
 
-    function rankingObject(player) {
-        if (player.ranking != null) {
-            return <>
-                <div style={{minWidth:'50%'}}>
-                    <Button variant="contained" color="primary" disabled>{player.name}</Button>
-                </div>
-                <div style={{minWidth:'50%'}}>
-                    <Chip label={rankingLabel(player.ranking)} onDelete={() => deleteRanking(player)} />
-                </div>
-            </>;
-        } else if (newRanking >= -1) {
-            return <>
-                <div style={{minWidth:'50%'}}>
-                    <Button variant="contained" color="primary" onClick={() => setRanking(player)}>{player.name}</Button>
-                </div>
-            </>;
-        } else {
-            return <>
-                <div style={{minWidth:'50%'}}>
-                    <Button variant="contained" color="primary" disabled>{player.name}</Button>
-                </div>
-                
-            </>;
+    function sendRanking() {
+        var ranking = {
+            firstId: items[0].id,
+            secondId: items[1].id,
+            thirdId: items[2].id,
+            lastBestId: items[items.length - 1].id
         }
-    }
-    function sendRankingObject() {
-        if (newRanking < -1) { return <p>test</p> }
+        publish(
+            { destination: `/app/game/${roomId}/result`, body: JSON.stringify(ranking, player.id) }
+        );
+        console.log(ranking);
     }
 
 
     return (
         <>
-            <Grid
-                container
-            //spacing={2}
-            >
-                {
-                    players.map((player, key) =>
-                        <Grid style={{ padding: '20px' }} item key={key} xs={12} sm={6}>
-                            <Grid
-                                container
-                                direction="row"
-                                justify="center"
-                                spacing={2}
+            <DragDropContext onDragEnd={(result) => onDragEnd(result)}>
+                <Droppable droppableId="droppable">
+                    {(provided) => (
+                        <RootRef rootRef={provided.innerRef}>
+                            <List
+                                className={classes.root}
+                                subheader={
+                                    <ListSubheader component="div" id="nested-list-subheader">
+                                        Ranking:
+                                </ListSubheader>
+                                }
                             >
-
-                                {rankingObject(player)}
-
-                            </Grid>
-                        </Grid>
+                                {items.map((item, index) => (
+                                    <Draggable key={item.id} draggableId={item.id} index={index}>
+                                        {(provided, snapshot) => (
+                                            <ListItem
+                                                ContainerComponent="li"
+                                                ContainerProps={{ ref: provided.innerRef }}
+                                                {...provided.draggableProps}
+                                                {...provided.dragHandleProps}
+                                                style={getItemStyle(
+                                                    snapshot.isDragging,
+                                                    provided.draggableProps.style
+                                                )}
+                                            >
+                                                <ListItemIcon>
+                                                    <img alt="Mormel logo" src={images[item.imageIndex]} style={{ width: '100%', marginRight: '5px' }} />
+                                                </ListItemIcon>
+                                                <ListItemText
+                                                    primary={item.name}
+                                                    secondary={item.ranking ? <b>{item.ranking}</b> : <i> neutral </i>}
+                                                />
+                                                <ListItemSecondaryAction />
+                                            </ListItem>
+                                        )}
+                                    </Draggable>
+                                ))}
+                                {provided.placeholder}
+                            </List>
+                        </RootRef>
                     )}
-                {sendRankingObject()}
-            </Grid>
+                </Droppable>
+            </DragDropContext>
+            <Button variant="contained" color="primary" onClick={() => sendRanking()} size="large">
+                SEND RANKING
+            </Button>
         </>
     );
 }
+
+

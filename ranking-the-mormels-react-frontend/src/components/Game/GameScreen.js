@@ -1,29 +1,53 @@
-import React, { useState, useEffect } from 'react';
-
-import { useParams } from 'react-router-dom'
+import React, { useState } from 'react';
 
 import LobbyScreen from './LobbyScreen';
+import Ranking from './Ranking';
+
+import { useHistory } from "react-router-dom";
+
+import { setMessageHandler } from '../Websocket'
 
 
 
+export default function GameScreen() {
+    const history = useHistory();
 
+    const [players, setPlayers] = useState(null);
+    const [question, setQuestion] = useState(null);
 
-export default function GameScreen(props) {
+    setMessageHandler((message) => {
+        message = JSON.parse(message);
 
-    let { roomId } = useParams();
-    const [question, setQuestion] = useState(JSON.parse(sessionStorage.getItem('question')) || '');
+        if (message.players != null) {
+            setPlayers(message.players)
+        }
 
-    useEffect(() => {
-        sessionStorage.setItem('question', JSON.stringify(question))
-    }, [question]);
+        if (message.question != null) {
+            setQuestion(message.question)
+        }
 
+        // if message is for player
+        if (message.player != null && message.player.id === JSON.parse(sessionStorage.getItem('player')).id) {
+            if (message.error != null) {
+                alert(message.error);
+                //sessionStorage.clear();
+                history.push('/');
+            } else {
+                sessionStorage.setItem('player', JSON.stringify(message.player));
+            }
+        }
+    })
 
-    if (question === '') {
+    if (question === null) {
         return (
-            <LobbyScreen setQuestion={setQuestion} client={props.client} roomId={roomId} subscribe={props.subscribe} />
+            <LobbyScreen players={players} />
         );
     } else {
-        console.log(question);
-        return (<p>Game component</p>);
+        return (
+            <>
+                <p>Question: {question}</p>
+                <Ranking players={players} />
+            </>
+        );
     }
 }

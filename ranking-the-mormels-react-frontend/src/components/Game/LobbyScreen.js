@@ -1,105 +1,92 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 import Button from "@material-ui/core/Button";
+import {
+    List,
+    ListItem,
+    ListItemText,
+    ListItemIcon,
+    ListItemSecondaryAction,
+    ListSubheader
+} from "@material-ui/core";
 
+import { makeStyles } from '@material-ui/core/styles';
+import images from '../../Images/playerImages/playerImage'
+
+import { publish } from '../Websocket'
+
+const useStyles = makeStyles((theme) => ({
+    root: {
+        width: '100%',
+        backgroundColor: theme.palette.background.paper,
+    },
+}));
 
 export default function LobbyScreen(props) {
+    const classes = useStyles();
 
-    const [players, setPlayers] = useState(JSON.parse(sessionStorage.getItem('players')) || null);
-    const [player, setPlayer] = useState(JSON.parse(sessionStorage.getItem('player')) || '')
-
-
-    useEffect(() => {
-        sessionStorage.setItem('players', JSON.stringify(players))
-    }, [players]);
+    const roomId = sessionStorage.getItem("roomId");
+    const player = JSON.parse(sessionStorage.getItem("player"));
 
 
-    useEffect(() => {
-        if (player != null) {
-            var url = `/room/${props.roomId}`;
-            if (player.host) {
-                props.subscribe(
-                    url,
-                    () => function (message) {
-                        setPlayers(JSON.parse(message.body));
-                    },
-                    { destination: `/app/room/${props.roomId}/players`, body: '' }
-                );
-            }
-            else {
-                props.subscribe(
-                    url,
-                    () => function (message) {
-                        props.setQuestion(JSON.parse(message.body));
-                    },
-                );
-            }
-        }
-    }, [player]);
+    if (player.host && props.players != null) {
 
-
-
-    if (player.host) {
         function start() {
-            var url = `/room/${props.roomId}`;
-            props.subscribe(
-                url,
-                () => function (message) {
-                    if (JSON.parse(message.body).question != null) {
-                        props.setQuestion(JSON.parse(message.body));
-                    }
-                },
-                { destination: `/app/game/${props.roomId}/nextQuestion`, body: sessionStorage.getItem('playerHash') }
+            publish(
+                { destination: `/app/game/${roomId}/new-question`, body: JSON.stringify(player) }
             );
         }
 
-
-        var Content = '';
         var StartButton = '';
-        if (players == null) {
+        var PlayerList = (
+            <>
+                <List
+                    className={classes.root}
+                    subheader={
+                        <ListSubheader component="div" id="nested-list-subheader">
+                            Players:
+                    </ListSubheader>
+                    }
+                >
+                    {props.players.map((player, key) =>
+                        <ListItem key={key} >
+                            <ListItemIcon>
+                                <img alt="Mormel logo" src={images[player.imageIndex]} style={{ width: '100%', marginRight: '5px' }} />
+                            </ListItemIcon>
+                            <ListItemText
+                                primary={player.name}
+                            />
+                            <ListItemSecondaryAction />
+                        </ListItem>
 
-            Content = (
-                <>
-                    <h4>Waiting for players to join...</h4>
-                </>
-            );
-
+                    )}
+                </List>
+            </>
+        );
+        if (props.players.length > 4) {
+            StartButton =
+                <Button variant="contained" color="primary" onClick={() => start()} size="large">
+                    START
+                </Button>
         } else {
+            StartButton =
+                <p>
+                    <b>{5 - props.players.length}</b> players need to join
+                </p>
 
-            Content = (
-                <>
-                    <h4>Players:</h4>
-                    <p>
-                        {players.map((player, key) =>
-                            <span key={key}>{player.name} <br /></span>
-                        )}
-                    </p>
-                </>
-            );
-            if (players.length > 4) {
-                console.log('test');
-                StartButton =
-                    (<Button variant="contained" color="primary" onClick={() => start()} size="large">
-                        START
-                    </Button>);
-            } else {
-                StartButton = (
-                    <><p>{5 - players.length} players need to join</p></>
-                );
-            }
         }
         return (
-            <div>
-                <h1>Join via {props.roomId}</h1>
-                {Content}
+            <>
+                <h1>Room code: <i>{roomId}</i></h1>
+                {PlayerList}
                 {StartButton}
-            </div>
+            </>
         );
     } else {
         return (
-            <div>
+            <>
                 <h4>Waiting for host to start the game...</h4>
-            </div>
+            </>
         );
     }
 }
