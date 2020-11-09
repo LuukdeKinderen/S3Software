@@ -23,8 +23,10 @@ client.onStompError = (frame) => {
 
 client.onConnect = () => {
     var roomId = sessionStorage.getItem('roomId')
-    if (roomId != null) {
+    var player = sessionStorage.getItem('player');
+    if (roomId != null && player != null) {
         subscribe(roomId);
+        publish({ destination: `/app/game/${roomId}/state`, body: player });
     }
 }
 
@@ -45,6 +47,7 @@ export function subscribe(newRoomId) {
 export function publish(publish) {
     client.publish(publish);
 }
+
 export function setMessageHandler(newMessageHandler) {
     messageHandler = (msg) => {
         newMessageHandler(msg);

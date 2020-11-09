@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import Button from "@material-ui/core/Button";
 import {
@@ -10,11 +10,10 @@ import {
     ListSubheader
 } from "@material-ui/core";
 
-import { useHistory } from "react-router-dom";
 import { makeStyles } from '@material-ui/core/styles';
 import images from '../../Images/playerImages/playerImage'
 
-import { setMessageHandler, publish } from '../Websocket'
+import { publish } from '../Websocket'
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -25,32 +24,12 @@ const useStyles = makeStyles((theme) => ({
 
 export default function LobbyScreen(props) {
     const classes = useStyles();
-    const history = useHistory();
 
     const roomId = sessionStorage.getItem("roomId");
     const player = JSON.parse(sessionStorage.getItem("player"));
 
-    const [players, setPlayers] = useState(null);
 
-    setMessageHandler((message) => {
-        message = JSON.parse(message);
-        
-        if (message.players != null) {
-            setPlayers(message.players)
-
-        } else if (message.question != null) {
-            props.setPlayers(players);
-            props.setQuestion(message.question)
-
-        } else if (message.error != null && message.player.id === JSON.parse(sessionStorage.getItem('player')).id) {
-            alert(message.error);
-            sessionStorage.clear();
-            history.push('/');
-        }
-    })
-
-
-    if (player.host && players != null) {
+    if (player.host && props.players != null) {
 
         function start() {
             publish(
@@ -69,7 +48,7 @@ export default function LobbyScreen(props) {
                     </ListSubheader>
                     }
                 >
-                    {players.map((player, key) =>
+                    {props.players.map((player, key) =>
                         <ListItem key={key} >
                             <ListItemIcon>
                                 <img alt="Mormel logo" src={images[player.imageIndex]} style={{ width: '100%', marginRight: '5px' }} />
@@ -84,7 +63,7 @@ export default function LobbyScreen(props) {
                 </List>
             </>
         );
-        if (players.length > 4) {
+        if (props.players.length > 4) {
             StartButton =
                 <Button variant="contained" color="primary" onClick={() => start()} size="large">
                     START
@@ -92,7 +71,7 @@ export default function LobbyScreen(props) {
         } else {
             StartButton =
                 <p>
-                    <b>{5 - players.length}</b> players need to join
+                    <b>{5 - props.players.length}</b> players need to join
                 </p>
 
         }

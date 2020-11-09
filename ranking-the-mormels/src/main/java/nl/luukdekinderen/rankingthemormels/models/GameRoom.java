@@ -13,6 +13,11 @@ public class GameRoom {
     private int currentQuestionCount;
     private String[] questionIds;
 
+    public GameRoom(){
+        currentQuestionCount = -1;
+        //TODO use Question service to fill questionIds
+    }
+
     public boolean AddPlayer(Player newPlayer) {
         boolean flag = false;
         for (Player player : players) {
@@ -32,8 +37,17 @@ public class GameRoom {
         return players;
     }
 
+    public String getQuestion() {
+        //TODO use Question service
 
-    public void NextQuestion() {
+        if (currentQuestionCount > -1) {
+            return "Wie kan het meeste bier op";
+        }
+        return null;
+    }
+
+
+    public void nextQuestion() {
         currentQuestionCount++;
         //check for end of game
 
@@ -83,9 +97,20 @@ public class GameRoom {
         return playerObjs;
     }
 
+    public JSONObject getPlayerObject(String id) {
+        Player foundPlayer = players.stream()
+                .filter(player -> player.getId().equals(id))
+                .findAny()
+                .orElse(null);
+        if (foundPlayer != null) {
+            return foundPlayer.toJSONObject();
+        }
+        return null;
+    }
+
     public boolean isRealHost(String playerId) {
-        for (Player player : players){
-            if(player.getId().equals(playerId) && player.isHost()){
+        for (Player player : players) {
+            if (player.getId().equals(playerId) && player.isHost()) {
                 return true;
             }
         }

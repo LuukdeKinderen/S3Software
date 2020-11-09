@@ -50,6 +50,7 @@ public class Player {
         player.put("id", id);
         player.put("name", name);
         player.put("imageIndex", imageIndex);
+        player.put("host", host);
         return player;
     }
 

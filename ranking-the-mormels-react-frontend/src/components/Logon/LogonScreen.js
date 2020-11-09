@@ -46,7 +46,6 @@ export default function LogonScreen() {
         var newPlayer = {
             id: makeid(25),
             name: name,
-            drinkCount: 0,
             host: true
         }
 

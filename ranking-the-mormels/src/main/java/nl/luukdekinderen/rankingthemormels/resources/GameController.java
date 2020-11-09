@@ -38,11 +38,26 @@ public class GameController {
 
         if(room.isRealHost(player.getId())){
 
+            room.nextQuestion();
+
             JSONObject message = new JSONObject();
-            message.put("question", "Wie is de aardigste speler!");
+            message.put("question", room.getQuestion());
 
             messagingTemplate.convertAndSend("/room/" + roomId, message.toString());
         }
+    }
+
+    @MessageMapping("/game/{roomId}/state")
+    public void gameState(@DestinationVariable String roomId, @Payload Player player) {
+
+        GameRoom room = roomService.getRoom(roomId);
+
+        JSONObject message = new JSONObject();
+        message.put("question", room.getQuestion());
+        message.put("players", room.getPlayerObjects());
+        message.put("player", room.getPlayerObject(player.getId()));
+
+        messagingTemplate.convertAndSend("/room/" + roomId, message.toString());
     }
 
 
